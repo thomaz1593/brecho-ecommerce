@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.thomazsilva.ecommerce.dto.ProductRequestDTO;
+import com.thomazsilva.ecommerce.dto.ProductResponseDTO;
 import com.thomazsilva.ecommerce.model.Product;
 import com.thomazsilva.ecommerce.service.ProductService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/products")
@@ -36,40 +41,88 @@ public class ProductController {
     //     return ResponseEntity.ok(products);
     // }
 
+    // ============================================================
+    // GET: LISTAR COM PAGINAÇÃO + FILTROS
+    // ============================================================
+    // @GetMapping
+    // public ResponseEntity<List<Product>> getProducts(
+    //     @RequestParam(required = false) String name,
+    //     @RequestParam(required = false) BigDecimal minPrice,
+    //     @RequestParam(required = false) BigDecimal maxPrice) {
+    //         List<Product> products = productService.filterByNameAndPrice(name, minPrice, maxPrice);
+    //         if (products.isEmpty()) return ResponseEntity.noContent().build();
+    //         return ResponseEntity.ok(products);
+    // }
+
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts(
+    public ResponseEntity<Page<ProductResponseDTO>> getFilteredAndPaginatedProducts(
         @RequestParam(required = false) String name,
         @RequestParam(required = false) BigDecimal minPrice,
-        @RequestParam(required = false) BigDecimal maxPrice) {
-            List<Product> products = productService.filterByNameAndPrice(name, minPrice, maxPrice);
-            if (products.isEmpty()) return ResponseEntity.noContent().build();
-            return ResponseEntity.ok(products);
+        @RequestParam(required = false) BigDecimal maxPrice,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductResponseDTO> results = productService.filterByNameAndPricePaginated(
+            name, minPrice, maxPrice, pageable).map(p -> p.toDTO());
+        return ResponseEntity.ok(results);
     }
 
-
+    // ============================================================
+    // POST: CRIAR PRODUTO
+    // ============================================================
+    // @PostMapping
+    // public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    //     Product createdProduct = productService.newProduct(product);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    // }
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product createdProduct = productService.newProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO dto) {
+        var product = productService.createProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(product.toDTO());
     }
 
+    // ============================================================
+    // GET: BUSCAR POR ID
+    // ============================================================
+    // @GetMapping("/{id}")
+    // public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+    //     Product product = productService.findById(id);
+    //     return ResponseEntity.ok(product);
+    // }
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        Product product = productService.findById(id);
-        return ResponseEntity.ok(product);
+    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.findById(id).toDTO());
     }
 
+    // ============================================================
+    // PUT: ATUALIZAR PRODUTO
+    // ============================================================
+    // @PutMapping("/{id}")
+    // public ResponseEntity<Product> updateProduct(@PathVariable Long id,
+    //     @RequestBody Product product) {
+    //         Product updatedProduct = productService.updateProduct(id, product);
+    //         return ResponseEntity.ok(updatedProduct);
+    // }
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id,
-        @RequestBody Product product) {
-            Product updatedProduct = productService.updateProduct(id, product);
-            return ResponseEntity.ok(updatedProduct);
+    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable Long id,
+        @Valid @RequestBody ProductRequestDTO dto) {
+            var updated = productService.updateProduct(id, dto);
+            return ResponseEntity.ok(updated.toDTO());
     }
 
+    // ============================================================
+    // DELETE
+    // ============================================================
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<String> deleteProductById(@PathVariable Long id) {
+    //     productService.deleteProduct(id);
+    //     return ResponseEntity.ok("Produto excluído com sucesso.");
+    // }
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProductById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteProductById(@PathVariable Long id) {
         productService.deleteProduct(id);
-        return ResponseEntity.ok("Produto excluído com sucesso.");
+        return ResponseEntity.noContent().build();
     }
 
     // @GetMapping("/product/filter")

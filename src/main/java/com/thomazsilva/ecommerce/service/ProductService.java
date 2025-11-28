@@ -32,6 +32,9 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    // -----------------------
+    // READ
+    // -----------------------
     public Product findById(Long id) {
         return productRepository.findById(id)
             .orElseThrow(() -> new ProductNotFoundException(id));
@@ -46,6 +49,9 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
+    // -----------------------
+    // DELETE
+    // -----------------------
     public void deleteProduct(Long id) {
         Product existingProduct = findById(id);
         productRepository.deleteById(existingProduct.getId());
@@ -210,7 +216,10 @@ public class ProductService {
         return productRepository.findAll(pageable);
     }
 
-    public Product fromDTO(ProductRequestDTO dto) {
+    // -----------------------
+    // HELPERS
+    // -----------------------
+    private Product fromDTO(ProductRequestDTO dto) {
         Product product = new Product();
         product.setName(dto.name());
         product.setPrice(dto.price());
@@ -219,10 +228,24 @@ public class ProductService {
         return product;
     }
 
-    public void updateEntity(Product product, ProductRequestDTO dto) {
+    private void updateEntity(Product product, ProductRequestDTO dto) {
         product.setName(dto.name());
         product.setPrice(dto.price());
         product.setDescription(dto.description());
         product.setImageUrl(dto.imageUrl());
+    }
+
+    // -----------------------
+    // CREATE (POST)
+    // -----------------------
+    public Product createProduct(ProductRequestDTO dto) {
+        Product product = fromDTO(dto);
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(Long id, ProductRequestDTO dto) {
+        Product existing = findById(id);
+        updateEntity(existing, dto);
+        return productRepository.save(existing);
     }
 }
