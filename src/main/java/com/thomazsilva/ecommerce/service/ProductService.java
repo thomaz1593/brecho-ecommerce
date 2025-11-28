@@ -81,40 +81,7 @@ public class ProductService {
         return productRepository.findByPriceBetween(minPrice, maxPrice);
     }
 
-    // public List<Product> filterByNameAndPrice(String name, BigDecimal minPrice, BigDecimal maxPrice) {
-    //     if (name != null && !name.isEmpty() && minPrice != null && maxPrice != null)
-    //         return productRepository.findByNameContainingIgnoreCaseAndPriceBetween(name, minPrice, maxPrice);
-    //     if (name != null && !name.isEmpty()) return filterByName(name);
-    //     if (minPrice != null || maxPrice != null) return filterByPrice(minPrice, maxPrice);
-    //     return getAllProducts();
-    // }
-
     public List<Product> filterByNameAndPrice(String name, BigDecimal minPrice, BigDecimal maxPrice) {
-        // boolean hasName = name != null && !name.isEmpty();
-        // boolean hasMin = minPrice != null;
-        // boolean hasMax = maxPrice != null;
-
-        // if (hasName && hasMin && hasMax) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceBetween(name, minPrice, maxPrice);
-        // }
-        
-        // if (hasName && hasMin) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceGreaterThanEqual(name, minPrice);
-        // }
-        
-        // if (hasName && hasMax) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceLessThanEqual(name, maxPrice);
-        // }
-        
-        // if (hasName) {
-        //     return filterByName(name);
-        // }
-        
-        // if (hasMin || hasMax) {
-        //     return filterByPrice(minPrice, maxPrice);
-        // } 
-        
-        // return getAllProducts();
         FilterType type = detectFilterType(name, minPrice, maxPrice);
         switch (type) {
             case NAME_MIN_MAX:
@@ -136,58 +103,9 @@ public class ProductService {
         }
     }
 
-    // public Page<Product> getProductsPaginated(
-    //     String name, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-    //         boolean hasName = name != null && !name.isEmpty();
-    //         boolean hasMin = minPrice != null;
-    //         boolean hasMax = maxPrice != null;
-
-    //         if (hasName && hasMin && hasMax) {
-    //             return productRepository.findByNameContainingIgnoreCaseAndPriceBetween(
-    //                 name, minPrice, maxPrice, pageable);
-    //         } else if (hasName) {
-    //             return productRepository.findByNameContainingIgnoreCase(name, pageable);
-    //         } else if (hasMin || hasMax) {
-    //             if (minPrice == null) return productRepository.findByPriceLessThanEqual(maxPrice, pageable);
-    //             if (maxPrice == null) return productRepository.findByPriceGreaterThanEqual(minPrice, pageable);
-    //             return productRepository.findByPriceBetween(minPrice, maxPrice, pageable);
-    //         } else {
-    //             return productRepository.findAll(pageable);
-    //         }
-    // }
-
     public Page<Product> filterByNameAndPricePaginated(
         String name, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable
     ) {
-        // boolean hasName = name != null && !name.isEmpty();
-        // boolean hasMin = minPrice != null;
-        // boolean hasMax = maxPrice != null;
-
-        // if (hasName && hasMin && hasMax) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceBetween(
-        //         name, minPrice, maxPrice, pageable);
-        // }
-
-        // if (hasName && hasMin) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceGreaterThanEqual(name, minPrice, pageable);
-        // }
-        
-        // if (hasName && hasMax) {
-        //     return productRepository.findByNameContainingIgnoreCaseAndPriceLessThanEqual(name, maxPrice, pageable);
-        // }
-        
-        // if (hasName) {
-        //     return productRepository.findByNameContainingIgnoreCase(name, pageable);
-        // }
-        
-        // if (hasMin || hasMax) {
-        //     BigDecimal realMin = hasMin ? minPrice : BigDecimal.ZERO;
-        //     // BigDecimal realMax = hasMax ? maxPrice : BigDecimal.valueOf(Double.MAX_VALUE);
-        //     BigDecimal realMax = hasMax ? maxPrice : new BigDecimal("9999999999");
-        //     return productRepository.findByPriceBetween(realMin, realMax, pageable);
-        // }
-
-        // return productRepository.findAll(pageable);
         FilterType type = detectFilterType(name, minPrice, maxPrice);
         switch (type) {
             case NAME_MIN_MAX:
@@ -236,13 +154,16 @@ public class ProductService {
     }
 
     // -----------------------
-    // CREATE (POST)
+    // CREATE DTO (POST)
     // -----------------------
     public Product createProduct(ProductRequestDTO dto) {
         Product product = fromDTO(dto);
         return productRepository.save(product);
     }
 
+    // -----------------------
+    // UPDATE DTO (PUT)
+    // -----------------------
     public Product updateProduct(Long id, ProductRequestDTO dto) {
         Product existing = findById(id);
         updateEntity(existing, dto);
